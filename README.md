@@ -1,6 +1,6 @@
 # NginxUtils
 
-TODO: Write a gem description
+Nginx utilities.
 
 ## Installation
 
