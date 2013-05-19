@@ -1,5 +1,7 @@
 # NginxUtils
 
+[![Build Status](https://travis-ci.org/i2bskn/nginx_utils.png?branch=master)](https://travis-ci.org/i2bskn/nginx_utils)
+
 Nginx utilities.
 
 ## Installation
