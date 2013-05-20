@@ -2,7 +2,9 @@
 
 module NginxUtils
   class Logrotate
-    attr_accessor :logger, :rename_logs, :delete_logs
+    attr_accessor :logger
+    attr_accessor :rename_logs
+    attr_accessor :delete_logs
 
     def initialize(options={})
       # Debug
@@ -134,22 +136,22 @@ module NginxUtils
         @logger.debug "Nginx restart command: #{cmd}" if @logger
         if @execute
           if system(cmd)
-            @logger.info "Nginx restart is successfully!" if @logger
+            @logger.info "Nginx restart is successfully" if @logger
           else
-            @logger.error "Nginx restart failed!" if @logger
-            raise "Nginx restart failed!" if @logger == false
+            @logger.error "Nginx restart failed" if @logger
+            raise "Nginx restart failed" if @logger == false
           end
         end
       else
-        @logger.warn "Pid file is not found. not restart nginx. (#{@pid_file})" if @logger
+        @logger.warn "Pid file is not found. Do not restart nginx. (#{@pid_file})" if @logger
       end
     end
 
     def execute
-      @logger.info "Nginx logrotate is started!" if @logger
+      @logger.info "Execute Nginx logrotate" if @logger
       rename
       delete
-      @logger.info "Nginx logrotate is successfully!" if @logger
+      @logger.info "Nginx logrotate is successfully" if @logger
       restart
     end
 

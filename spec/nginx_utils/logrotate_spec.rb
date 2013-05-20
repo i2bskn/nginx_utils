@@ -5,21 +5,21 @@ require "spec_helper"
 describe NginxUtils do
   include FakeFS::SpecHelpers
 
-  def create_files(options={retention: 90})
-    root_dir = options[:root_dir] || "/usr/local/nginx/logs"
+  def create_files
+    root_dir = "/usr/local/nginx/logs"
     FileUtils.mkdir_p root_dir
-    not_del = Time.now - ((options[:retention].to_i - 1) * 3600 * 24)
-    do_del = Time.now - ((options[:retention].to_i + 1) * 3600 * 24)
+    FileUtils.mkdir_p "/tmp"
+    not_del = Time.now - (89 * 3600 * 24)
+    do_del = Time.now - (91 * 3600 * 24)
     not_del_file = "access.log.#{not_del.strftime('%Y%m%d%H%M%S')}"
     do_del_file = "access.log.#{do_del.strftime('%Y%m%d%H%M%S')}"
-    files = [
+    [
       "access.log",
       "error.log",
       "nginx.pid",
       not_del_file,
       do_del_file
-    ]
-    files.each{|f| File.open(File.join(root_dir, f), "w").close}
+    ].each{|f| File.open(File.join(root_dir, f), "w").close}
     File.utime(not_del, not_del, File.join(root_dir, not_del_file))
     File.utime(do_del, do_del, File.join(root_dir, do_del_file))
     {
@@ -28,8 +28,12 @@ describe NginxUtils do
     }
   end
 
+  def log_lines
+    File.open("/tmp/nginx_rotate.log").read.split("\n")
+  end
+
   before(:each) do
-    FileUtils.mkdir_p "/tmp"
+    @created = create_files
     @script_log = File.open("/tmp/nginx_rotate.log", "a")
   end
 
@@ -37,15 +41,11 @@ describe NginxUtils do
     describe "#initialize" do
       before(:each) do
         @time_now = Time.now
-        Time.stub!(:now).and_return(@time_now)
+        Time.stub(:now).and_return(@time_now)
+        @rotate = NginxUtils::Logrotate.new(script_log: @script_log)
       end
 
       context "with default params" do
-        before(:each) do
-          create_files
-          @rotate = NginxUtils::Logrotate.new(script_log: @script_log)
-        end
-
         it "@execute should be true" do
           expect(@rotate.instance_eval{@execute}).to eq(true)
         end
@@ -154,7 +154,7 @@ describe NginxUtils do
     describe "#config" do
       before(:each) do
         @time_now = Time.now
-        Time.stub!(:now).and_return(@time_now)
+        Time.stub(:now).and_return(@time_now)
         @rotate = NginxUtils::Logrotate.new(script_log: @script_log)
       end
 
@@ -225,60 +225,49 @@ describe NginxUtils do
 
     describe "#rename" do
       before(:each) do
-        create_files
-        @rotate = NginxUtils::Logrotate.new(script_log: @script_log)
+        @prefix = Time.now.strftime('%Y%m%d%H%M%S')
+        @rotate = NginxUtils::Logrotate.new(script_log: @script_log, prefix: @prefix)
       end
 
       it "rename target logs" do
-        prefix = Time.now.strftime('%Y%m%d%H%M%S')
-        @rotate.config prefix: prefix
         @rotate.rename
         @rotate.rename_logs.each do |log|
           expect(File.exists? log).to eq(false)
-          expect(File.exists? "#{log}.#{prefix}").to eq(true)
+          expect(File.exists? "#{log}.#{@prefix}").to eq(true)
         end
       end
 
       it "output log file" do
         @rotate.rename
-        log_lines = File.open("/tmp/nginx_rotate.log").read.split("\n")
         expect(log_lines.size).to eq(@rotate.rename_logs.size)
+        expect(log_lines.select{|l| /Rename log file/ =~ l}.size).to eq(@rotate.rename_logs.size)
       end
 
       it "do not rename if a file with the same name exists" do
-        prefix = Time.now.strftime('%Y%m%d%H%M%S')
-        @rotate.config prefix: prefix
-        File.open("#{@rotate.rename_logs.first}.#{prefix}", "w").close
+        File.open("#{@rotate.rename_logs.first}.#{@prefix}", "w").close
         @rotate.rename
-        log_lines = File.open("/tmp/nginx_rotate.log").read.split("\n")
         expect(File.exists? @rotate.rename_logs.first).to eq(true)
         expect(log_lines.select{|line| /File already exists/ =~ line}.size).to eq(1)
       end
 
       it "do not rename if not executable" do
-        prefix = Time.now.strftime('%Y%m%d%H%M%S')
-        @rotate.config debug: true, script_log: false, prefix: prefix
+        @rotate.config debug: true, script_log: false
         @rotate.rename
         @rotate.rename_logs.each do |log|
           expect(File.exists? log).to eq(true)
-          expect(File.exists? "#{log}.#{prefix}").to eq(false)
+          expect(File.exists? "#{log}.#{@prefix}").to eq(false)
         end
       end
 
       it "do not output log if script_log is false" do
         @rotate.config script_log: false
         @rotate.rename
-        log_lines = File.open("/tmp/nginx_rotate.log").read.split("\n")
         expect(log_lines.size).to eq(0)
       end
     end
 
     describe "#delete" do
       before(:each) do
-        @time_now = Time.now
-        Time.stub!(:now).and_return(@time_now)
-        @retention = @time_now - (90 * 3600 * 24)
-        @created = create_files
         @rotate = NginxUtils::Logrotate.new(script_log: @script_log)
       end
 
@@ -290,89 +279,101 @@ describe NginxUtils do
 
       it "output log file" do
         @rotate.delete
-        log_lines = File.open("/tmp/nginx_rotate.log").read.split("\n")
         expect(log_lines.size).to eq(1)
       end
 
       it "do not delete if not executable" do
+        File.should_not_receive(:unlink)
         @rotate.config debug: true, script_log: false
         @rotate.delete
-        expect(File.exists? @created[:do_del_file]).to eq(true)
       end
 
       it "do not output log if script_log is false" do
         @rotate.config script_log: false
         @rotate.delete
-        log_lines = File.open("/tmp/nginx_rotate.log").read.split("\n")
         expect(log_lines.size).to eq(0)
       end
     end
 
     describe "#restart" do
       before(:each) do
-        @command = "kill -USR1 `cat /usr/local/nginx/logs/nginx.pid`"
-        create_files
+        Object.any_instance.stub(:system).and_return(true)
         @rotate = NginxUtils::Logrotate.new(script_log: @script_log)
       end
 
       it "should execute command" do
-        Object.any_instance.should_receive(:system).with(@command).and_return(true)
+        Object.any_instance.should_receive(:system).and_return(true)
         @rotate.restart
-        log_lines = File.open("/tmp/nginx_rotate.log").read.split("\n")
-        expect(log_lines.select{|line| /Nginx restart is successfully!/ =~ line}.size).to eq(1)
+      end
+
+      it "output success log" do
+        @rotate.restart
+        expect(log_lines.select{|l| /Nginx restart command/ =~ l}.size).to eq(1)
+        expect(log_lines.select{|l| /Nginx restart is successfully/ =~ l}.size).to eq(1)
       end
 
       it "do not execute command if not exists pid file" do
-        File.stub!(:exists?).and_return(false)
+        Object.any_instance.should_not_receive(:system)
+        File.stub(:exists?).and_return(false)
         @rotate.restart
-        log_lines = File.open("/tmp/nginx_rotate.log").read.split("\n")
-        expect(log_lines.select{|line| /Pid file is not found/ =~ line}.size).to eq(1)
+      end
+
+      it "should output log if not exists pid file" do
+        File.stub(:exists?).and_return(false)
+        @rotate.restart
+        expect(log_lines.select{|l| /Pid file is not found/ =~ l}.size).to eq(1)
       end
 
       it "do not execute commando if not executable" do
-        @rotate.config debug: true, script_log: @script_log
+        Object.any_instance.should_not_receive(:system)
+        @rotate.config debug: true, script_log: false
         @rotate.restart
-        log_lines = File.open("/tmp/nginx_rotate.log").read.split("\n")
-        expect(log_lines.size).to eq(1)
       end
 
       it "should outputs error log if it fails" do
-        Object.any_instance.should_receive(:system).with(@command).and_return(false)
+        Object.any_instance.should_receive(:system).and_return(false)
         @rotate.restart
-        log_lines = File.open("/tmp/nginx_rotate.log").read.split("\n")
-        expect(log_lines.select{|line| /Nginx restart failed!/ =~ line}.size).to eq(1)
+        expect(log_lines.select{|l| /Nginx restart failed/ =~ l}.size).to eq(1)
       end
 
       it "should generate an exception if it fails" do
+        Object.any_instance.should_receive(:system).and_return(false)
         @rotate.config script_log: false
-        Object.any_instance.should_receive(:system).with(@command).and_return(false)
-        expect(proc{@rotate.restart}).to raise_error
+        expect(proc{@rotate.restart}).to raise_error("Nginx restart failed")
+      end
+
+      it "do not output log if script_log is false" do
+        @rotate.config script_log: false
+        @rotate.restart
+        expect(log_lines.size).to eq(0)
       end
     end
 
     describe "#execute" do
       before(:each) do
-        NginxUtils::Logrotate.any_instance.should_receive(:rename).and_return(true)
-        NginxUtils::Logrotate.any_instance.should_receive(:delete).and_return(true)
-        NginxUtils::Logrotate.any_instance.should_receive(:restart).and_return(true)
-        create_files
+        NginxUtils::Logrotate.any_instance.stub(:rename).and_return(true)
+        NginxUtils::Logrotate.any_instance.stub(:delete).and_return(true)
+        NginxUtils::Logrotate.any_instance.stub(:restart).and_return(true)
         @rotate = NginxUtils::Logrotate.new(script_log: @script_log)
       end
 
-      it "should call methods" do
+      it "should call rename and delete and restart methods" do
+        NginxUtils::Logrotate.any_instance.should_receive(:rename).and_return(true)
+        NginxUtils::Logrotate.any_instance.should_receive(:delete).and_return(true)
+        NginxUtils::Logrotate.any_instance.should_receive(:restart).and_return(true)
         @rotate.execute
       end
 
       it "output log file" do
         @rotate.execute
-        log_lines = File.open("/tmp/nginx_rotate.log").read.split("\n")
+        expect(log_lines.select{|l| /Execute Nginx logrotate/ =~ l}.size).to eq(1)
+        expect(log_lines.select{|l| /Nginx logrotate is successfully/ =~ l}.size).to eq(1)
         expect(log_lines.size).to eq(2)
       end
 
       it "do not output log if script_log is false" do
         @rotate.config script_log: false
         @rotate.execute
-        log_lines = File.open("/tmp/nginx_rotate.log").read.split("\n")
         expect(log_lines.size).to eq(0)
       end
     end
