@@ -8,7 +8,9 @@ Nginx utilities.
 
 Add this line to your application's Gemfile:
 
-    gem 'nginx_utils'
+```ruby
+gem 'nginx_utils'
+```
 
 And then execute:
 
@@ -20,13 +22,17 @@ Or install it yourself as:
 
 ## Usage
 
-```
+```ruby
 require 'nginx_utils'
 ```
 
-Logrotate:
+### Logrotate
 
-```
+Logs of rename target: `Dir.glob "#{root_dir}/**/#{target_logs}"`  
+Logs of delete target: `Dir.glob "#{root_dir}/**/#{target_logs}.*"`
+
+```ruby
+# Following parameters are default.
 params = {
   debug: false,
   script_log: "/tmp/nginx_rotate.log",
@@ -39,28 +45,78 @@ params = {
 }
 
 rotate = NginxUtils::Logrotate.new(params)
+# == Configure
+# rotate.config log_level: :worn
+
+# == Accessor
+# rotate.logger.formatter = proc { |severity, datetime, progname, msg|
+#   "#{datetime}: #{msg}\n"
+# }
+# rotate.rename_logs << add_rename_log
+# rotate.delete_logs << add_delete_log
+
 rotate.execute
 ```
 
-Status:
+Options that can be specified:
 
-```
-p NginxUtils::Status.get # => {active_connection: 1, accepts: 4, handled: 5, requests: 51, reading: 1, writing: 3, waiting: 2}
+* `:debug` => `true` or `false`. If `:debug` is true, it is not execute.
+* `:script_log` => `"/path/to/nginx_rotate.log"`. If `:script` is false, do not output logs.
+* `:log_level` => `:debug` or `:info` or `:warn` or `:error` or `:fatal`.
+* `:root_dir` => `"/path/to/nginx"`. Root directory of Nginx.
+* `:target_logs` => `"*.log"`. Specify logs of target.
+* `:prefix` => `Time.now.strftime("%Y%m%d%H%M%S")`. Prefix use to rename.
+* `:retention` => `90`. Specify in days the retention period of log.
+* `:pid_file` => `"/path/to/nginx.pid"`. Use to restart Nginx.
+
+### Status
+
+Require **HttpStubStatusModule**.
+
+```ruby
+# http://localhost/nginx_status
+NginxUtils::Status.get # => {active_connection: 1, accepts: 4, handled: 5, requests: 51, reading: 1, writing: 3, waiting: 2}
+
+# Apache like
+# http://example.com/server-status
+NginxUtils::Status.get(host: "example.com", path: "/server-status")
 ```
 
-Logreader:
+### Logreader
 
-```
-reader = NginxUtils::Logreader.new("/path/to/nginx/logs/access.log")
+LTSV:
+
+The default format is `:ltsv`.
+
+```ruby
+log_file = "/path/to/nginx/logs/access.log.ltsv"
+reader = NginxUtils::Logreader.new(log_file)
 reader.each do |line|
   p line # => {time: "2013-05-19T08:13:14+00:00", host: "192.168.1.10", ...}
 end
 ```
 
+Combined:
+
+```ruby
+log_file = "/path/to/nginx/logs/access.log.combined"
+reader = NginxUtils::Logreader.new(log_file, format: :combined)
+reader.each {|line| p line} # => {:remote_addr=>"x.x.x.x", :remote_user=>"-", :time_local=>"19/May/2013:23:14:04 +0900", :request=>"GET / HTTP/1.1", :status=>"200", :body_bytes_sent=>"564", :http_referer=>"-", :http_user_agent=>"-"}
+```
+
+Custom:
+
+```ruby
+log_file = "/path/to/nginx/logs/access.log.combined"
+parser = /\[(.*)\]\s"(.*?)"/
+reader = NginxUtils::Logreader.new(log_file, parser: parser)
+reader.each {|line| p line.first} #=> ["19/May/2013:23:13:52 +0900", "GET / HTTP/1.1"]
+```
+
 Options that can be specified:
 
-* :format => :ltsv or :combined
-* :parser => Parse with scan method. Specified in Regexp.
+* `:format` => `:ltsv` or `:combined`. If parser is specified, format is automatically `:custom`.
+* `:parser` => Parse with `String#scan`. Specified in Regexp.
 
 ## Contributing
 
