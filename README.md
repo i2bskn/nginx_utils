@@ -24,7 +24,7 @@ Or install it yourself as:
 require 'nginx_utils'
 ```
 
-Nginx log rotate:
+Logrotate:
 
 ```
 params = {
@@ -35,12 +35,32 @@ params = {
   target_logs: "*.log",
   prefix: Time.now.strftime("%Y%m%d%H%M%S"),
   retention: 90,
-  pid_file: "/usr/local/nginx/logs/nginx.pid"  
+  pid_file: "/usr/local/nginx/logs/nginx.pid"
 }
 
 rotate = NginxUtils::Logrotate.new(params)
 rotate.execute
 ```
+
+Status:
+
+```
+p NginxUtils::Status.get # => {active_connection: 1, accepts: 4, handled: 5, requests: 51, reading: 1, writing: 3, waiting: 2}
+```
+
+Logreader:
+
+```
+reader = NginxUtils::Logreader.new("/path/to/nginx/logs/access.log")
+reader.each do |line|
+  p line # => {time: "2013-05-19T08:13:14+00:00", host: "192.168.1.10", ...}
+end
+```
+
+Options that can be specified:
+
+* :format => :ltsv or :combined
+* :parser => Parse with scan method. Specified in Regexp.
 
 ## Contributing
 
