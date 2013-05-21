@@ -22,13 +22,30 @@ Or install it yourself as:
 
 ## Usage
 
+From console:
+
+    $ nginx_logrotate -h
+    Usage: nginx_logrotate [options]
+    -d, --[no-]debug                 Debug mode. Run only log output to STDOUT.
+        --script_log=VAL             Log file for script.
+        --log_level=VAL              Log level of script log.
+        --root_dir=VAL               Root directory of Nginx.
+        --target_logs=VAL            Specify logs of target.
+        --retention=VAL              Specify in days the retention period of log.
+        --pid_file=VAL               PID file of Nginx
+    $ nginx_status -h
+    Usage: nginx_status [options]
+        --only-value                 The output only the value.
+
+From ruby:
+
 ```ruby
 require 'nginx_utils'
 ```
 
 ### Logrotate
 
-Logs of rename target: `Dir.glob "#{root_dir}/**/#{target_logs}"`  
+Logs of rename target: `Dir.glob "#{root_dir}/**/#{target_logs}"`
 Logs of delete target: `Dir.glob "#{root_dir}/**/#{target_logs}.*"`
 
 ```ruby
