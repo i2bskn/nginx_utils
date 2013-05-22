@@ -132,14 +132,14 @@ module NginxUtils
 
     def restart
       if File.exists? @pid_file
-        cmd = "kill -USR1 `cat #{@pid_file}`"
-        @logger.debug "Nginx restart command: #{cmd}" if @logger
         if @execute
-          if system(cmd)
+          begin
+            Process.kill(:USR1, File.read(@pid_file).to_i)
             @logger.info "Nginx restart is successfully" if @logger
-          else
+          rescue => e
             @logger.error "Nginx restart failed" if @logger
-            raise "Nginx restart failed" if @logger == false
+            @logger.error e if @logger
+            raise "Nginx restart failed"
           end
         end
       else

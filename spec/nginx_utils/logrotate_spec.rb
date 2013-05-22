@@ -297,23 +297,22 @@ describe NginxUtils do
 
     describe "#restart" do
       before(:each) do
-        Object.any_instance.stub(:system).and_return(true)
+        Process.stub(:kill).and_return(1)
         @rotate = NginxUtils::Logrotate.new(script_log: @script_log)
       end
 
       it "should execute command" do
-        Object.any_instance.should_receive(:system).and_return(true)
+        Process.should_receive(:kill).and_return(1)
         @rotate.restart
       end
 
       it "output success log" do
         @rotate.restart
-        expect(log_lines.select{|l| /Nginx restart command/ =~ l}.size).to eq(1)
         expect(log_lines.select{|l| /Nginx restart is successfully/ =~ l}.size).to eq(1)
       end
 
       it "do not execute command if not exists pid file" do
-        Object.any_instance.should_not_receive(:system)
+        Process.should_not_receive(:kill)
         File.stub(:exists?).and_return(false)
         @rotate.restart
       end
@@ -325,21 +324,15 @@ describe NginxUtils do
       end
 
       it "do not execute commando if not executable" do
-        Object.any_instance.should_not_receive(:system)
+        Process.should_not_receive(:kill)
         @rotate.config debug: true, script_log: false
         @rotate.restart
       end
 
-      it "should outputs error log if it fails" do
-        Object.any_instance.should_receive(:system).and_return(false)
-        @rotate.restart
-        expect(log_lines.select{|l| /Nginx restart failed/ =~ l}.size).to eq(1)
-      end
-
-      it "should generate an exception if it fails" do
-        Object.any_instance.should_receive(:system).and_return(false)
-        @rotate.config script_log: false
+      it "should generate an exception" do
+        Process.should_receive(:kill).and_raise("error")
         expect(proc{@rotate.restart}).to raise_error("Nginx restart failed")
+        expect(log_lines.select{|l| /Nginx restart failed/ =~ l}.size).to eq(1)
       end
 
       it "do not output log if script_log is false" do
