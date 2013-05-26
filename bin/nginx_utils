@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+# coding: utf-8
+
+require "nginx_utils"
+
+NginxUtils::CLI.start

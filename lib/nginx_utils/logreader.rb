@@ -5,7 +5,7 @@ module NginxUtils
     include Enumerable
 
     def initialize(log, options={})
-      @log = File.open(log, "r")
+      @log = File.open(log)
 
       if options[:parser]
         if options[:parser].is_a? Regexp
@@ -27,7 +27,7 @@ module NginxUtils
 
     private
     def parse(line)
-      case @format
+      case @format.to_sym
       when :ltsv then
         row = line.split("\t").map do |f|
           c = f.split(":")
