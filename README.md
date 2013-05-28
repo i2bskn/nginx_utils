@@ -1,5 +1,6 @@
 # NginxUtils
 
+[![Gem Version](https://badge.fury.io/rb/nginx_utils.png)](http://badge.fury.io/rb/nginx_utils)
 [![Build Status](https://travis-ci.org/i2bskn/nginx_utils.png?branch=master)](https://travis-ci.org/i2bskn/nginx_utils)
 
 Nginx utilities.
