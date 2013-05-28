@@ -3,19 +3,28 @@
 require "spec_helper"
 
 describe "NginxUtils::Status" do
+  let(:body) {"Active connections: 1 \nserver accepts handled requests\n 4 5 51 \nReading: 1 Writing: 3 Waiting: 2 \n"}
+  let(:status) {{active_connections: 1, accepts: 4, handled: 5, requests: 51, reading: 1, writing: 3, waiting: 2}}
+
   describe ".get" do
+    before {NginxUtils::Status.stub(:parse).and_return(nil)}
+
     it "should get status" do
-      body = "Active connections: 1 \nserver accepts handled requests\n 4 5 51 \nReading: 1 Writing: 3 Waiting: 2 \n"
-      status = {active_connections: 1, accepts: 4, handled: 5, requests: 51, reading: 1, writing: 3, waiting: 2}
       response = double("http response mock", body: body)
       Net::HTTP.should_receive(:start).and_return(response)
-      expect(NginxUtils::Status.get).to eq(status)
+      expect(proc{NginxUtils::Status.get}).not_to raise_error
+    end
+  end
+
+  describe "#parse" do
+    it "should return status hash" do
+      response = double("http response mock", body: body)
+      expect(NginxUtils::Status.parse(response)).to eq(status)
     end
 
-    it "should generate an exception if status get fails" do
+    it "should generate an exception if parse failed" do
       response = double("http response mock", body: "invalid content")
-      Net::HTTP.should_receive(:start).and_return(response)
-      expect(proc{NginxUtils::Status.get}).to raise_error("Nginx status get failed")
+      expect(proc{NginxUtils::Status.parse(response)}).to raise_error(RuntimeError, "Parse error")
     end
   end
 end
