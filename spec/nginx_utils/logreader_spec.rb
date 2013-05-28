@@ -25,7 +25,7 @@ describe "NginxUtils::Logreader" do
       end
 
       it "default parser should be nil" do
-        expect(reader.instance_eval{@parser}).to eq(nil)
+        expect(reader.instance_eval{@parser}).to be_nil
       end
     end
 

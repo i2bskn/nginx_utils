@@ -32,7 +32,7 @@ describe "NginxUtils::Logrotate" do
       let(:execute) {rotate.instance_eval{@execute}}
 
       it "@execute should be true" do
-        expect(execute).to eq(true)
+        expect(execute).to be_true
       end
 
       it "@logger should be created" do
@@ -77,11 +77,11 @@ describe "NginxUtils::Logrotate" do
       end
 
       it "@rename_logs should be created" do
-        expect(rotate.rename_logs).not_to eq(nil)
+        expect(rotate.rename_logs).not_to be_nil
       end
 
       it "@delete_logs should be created" do
-        expect(rotate.delete_logs).not_to eq(nil)
+        expect(rotate.delete_logs).not_to be_nil
       end
     end
 
@@ -91,7 +91,7 @@ describe "NginxUtils::Logrotate" do
       let(:execute) {debug_rotate.instance_eval{@execute}}
 
       it "@execute should be false" do
-        expect(execute).to eq(false)
+        expect(execute).to be_false
       end
 
       it "@logger should be created with STDOUT" do
@@ -113,7 +113,7 @@ describe "NginxUtils::Logrotate" do
     context "with custom params" do
       it "@logger should be false if script_log is false" do
         rotate = NginxUtils::Logrotate.new(script_log: false)
-        expect(rotate.logger).to eq(false)
+        expect(rotate.logger).to be_false
       end
 
       it "@logger.level should be a specified level" do
@@ -154,18 +154,18 @@ describe "NginxUtils::Logrotate" do
     it "@execute should be a false if debug is true" do
       Logger.should_receive(:new).with(STDOUT)
       rotate.config debug: true
-      expect(execute).to eq(false)
+      expect(execute).to be_false
     end
 
     it "@execute should be a true if debug is false" do
       rotate = NginxUtils::Logrotate.new(debug: true)
       rotate.config debug: false
-      expect(rotate.instance_eval{@execute}).to eq(true)
+      expect(rotate.instance_eval{@execute}).to be_true
     end
 
     it "@logger should be a false if script_log is false" do
       rotate.config script_log: false
-      expect(rotate.logger).to eq(false)
+      expect(rotate.logger).to be_false
     end
 
     it "@logger.level should be a specified level" do
@@ -205,7 +205,7 @@ describe "NginxUtils::Logrotate" do
   end
 
   describe "#rename" do
-    before(:each) do
+    before do
       Dir.should_receive(:glob).exactly(2).times.and_return(files)
       File.stub(:rename).and_return(true)
     end
@@ -241,7 +241,7 @@ describe "NginxUtils::Logrotate" do
   end
 
   describe "#delete" do
-    before(:each) do
+    before do
       Dir.should_receive(:glob).exactly(2).times.and_return(files)
       delete_time = Time.now - ((default[:retention] + 1) * 3600 * 24)
       File.stub(:stat).and_return(double("time mock", mtime: delete_time))
@@ -272,7 +272,7 @@ describe "NginxUtils::Logrotate" do
   end
 
   describe "#restart" do
-    before(:each) do
+    before do
       File.stub(:exists?).and_return(true)
       File.stub(:read).and_return("2000")
       Process.stub(:kill).and_return(1)
@@ -320,7 +320,7 @@ describe "NginxUtils::Logrotate" do
   end
 
   describe "#execute" do
-    before(:each) do
+    before do
       NginxUtils::Logrotate.any_instance.stub(:rename).and_return(true)
       NginxUtils::Logrotate.any_instance.stub(:delete).and_return(true)
       NginxUtils::Logrotate.any_instance.stub(:restart).and_return(true)
@@ -343,5 +343,5 @@ describe "NginxUtils::Logrotate" do
       rotate.config script_log: false
       rotate.execute
     end
-  end  
+  end
 end
