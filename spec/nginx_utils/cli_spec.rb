@@ -37,10 +37,10 @@ describe "NginxUtils::CLI" do
         capture(:stdout) {
           NginxUtils::CLI.start(args)
         }
-      ).to eq("Active Connections: \nAccepts: 4 Handled: 5 Requests: 51\nReading: 1 Writing: 3 Waiting: 2\n")
+      ).to eq("Active Connections: 1\nAccepts: 4 Handled: 5 Requests: 51\nReading: 1 Writing: 3 Waiting: 2\n")
     end
 
-    it "only value output" do 
+    it "only value output" do
       args = ["status", "--only_value"]
       expect(
         capture(:stdout) {

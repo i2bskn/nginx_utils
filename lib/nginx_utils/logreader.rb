@@ -29,15 +29,12 @@ module NginxUtils
     def parse(line)
       case @format.to_sym
       when :ltsv then
-        row = line.split("\t").map do |f|
-          c = f.split(":")
-          if c == 2
-            [c[0].to_sym, c[1]]
-          else
-            [c[0].to_sym, c[1..-1].join(":")]
+        Hash[
+          line.split("\t").map do |f|
+            a = f.split(":")
+            a.size > 2 ? [a[0].to_sym, a[1..-1].join(":")] : [a[0].to_sym, a[1]]
           end
-        end
-        Hash[row]
+        ]
       when :combined then
         if /([0-9.]+)\s-\s([^\s]+)\s\[(.*?)\]\s"(.*?)"\s([0-9]+)\s([0-9]+)\s"(.*?)"\s"(.*?)".*/ =~ line
           {

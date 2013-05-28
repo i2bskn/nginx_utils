@@ -29,6 +29,10 @@ From console:
     nginx_utils help [COMMAND]      # Describe available commands or one specific command
     nginx_utils logrotate -d        # Nginx logrotate
     nginx_utils status example.com  # Print status of Nginx
+    $ nginx_utils status --only_value
+    Active Connections: 1
+    Accepts: 4 Handled: 5 Requests: 51
+    Reading: 1 Writing: 3 Waiting: 2
 
 From ruby:
 

@@ -12,7 +12,7 @@ module NginxUtils
       if options[:only_value]
         puts result.values.join("\t")
       else
-        puts "Active Connections: #{result[:active_connection]}"
+        puts "Active Connections: #{result[:active_connections]}"
         puts "Accepts: #{result[:accepts]} Handled: #{result[:handled]} Requests: #{result[:requests]}"
         puts "Reading: #{result[:reading]} Writing: #{result[:writing]} Waiting: #{result[:waiting]}"
       end
