@@ -16,20 +16,24 @@ module NginxUtils
       private
       def parse(response)
           status = response.body.split("\n")
-          formexp(status[0], status[2].split, status[3].split)
+          formexp([
+            status[0].split(":")[1],
+            status[2].split,
+            status[3].split.select{|i| /^[0-9]*$/ =~ i}
+          ].flatten)
         rescue
           raise "Parse error"
       end
 
-      def formexp(ac_line, server_line, rww_line)
+      def formexp(args)
         {
-          active_connections: ac_line.split(":")[1].to_i,
-          accepts: server_line[0].to_i,
-          handled: server_line[1].to_i,
-          requests: server_line[2].to_i,
-          reading: rww_line[1].to_i,
-          writing: rww_line[3].to_i,
-          waiting: rww_line[5].to_i
+          active_connections: args[0].to_i,
+          accepts: args[1].to_i,
+          handled: args[2].to_i,
+          requests: args[3].to_i,
+          reading: args[4].to_i,
+          writing: args[5].to_i,
+          waiting: args[6].to_i
         }
       end
     end

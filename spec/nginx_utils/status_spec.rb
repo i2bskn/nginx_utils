@@ -30,8 +30,8 @@ describe "NginxUtils::Status" do
 
   describe ".formexp" do
     it "should return status hash with format" do
-      args = body.split("\n")
-      expect(NginxUtils::Status.send(:formexp, args[0], args[2].split, args[3].split)).to eq(status)
+      args = [" 1 ", "4", "5", "51", "1", "3", "2"]
+      expect(NginxUtils::Status.send(:formexp, args)).to eq(status)
     end
   end
 end

@@ -69,6 +69,7 @@ module NginxUtils
         first = true
         @params = default_params.merge(options)
         flags = @params.keys
+        flags.delete(:script_log) if options[:debug] && options[:script_log].nil?
       else
         first = false
         flags = options.select{|k,v| @params[k] != v}.keys
