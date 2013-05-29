@@ -10,16 +10,15 @@ module NginxUtils
 
         req = Net::HTTP::Get.new(path)
         res = Net::HTTP.start(host, port){|http| http.request(req)}
-        parse res
+        parse res.body.split("\n").map{|l| l.split}
       end
 
       private
-      def parse(response)
-          status = response.body.split("\n")
+      def parse(spbody)
           formexp([
-            status[0].split(":")[1],
-            status[2].split,
-            status[3].split.select{|i| /^[0-9]*$/ =~ i}
+            spbody[0].last,
+            spbody[2],
+            spbody[3].select{|i| /^[0-9]*$/ =~ i}
           ].flatten.map{|i| i.to_i})
         rescue
           raise "Parse error"

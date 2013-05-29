@@ -18,13 +18,13 @@ describe "NginxUtils::Status" do
 
   describe ".parse" do
     it "should return status hash" do
-      response = double("http response mock", body: body)
-      expect(NginxUtils::Status.send(:parse, response)).to eq(status)
+      spbody = body.split("\n").map{|l| l.split}
+      expect(NginxUtils::Status.send(:parse, spbody)).to eq(status)
     end
 
     it "should generate an exception if parse failed" do
-      response = double("http response mock", body: "invalid content")
-      expect(proc{NginxUtils::Status.send(:parse, response)}).to raise_error(RuntimeError, "Parse error")
+      spbody = "invalid content".split("\n").map{|l| l.split}
+      expect(proc{NginxUtils::Status.send(:parse, spbody)}).to raise_error(RuntimeError, "Parse error")
     end
   end
 
