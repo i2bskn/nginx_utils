@@ -2,8 +2,9 @@
 
 [![Gem Version](https://badge.fury.io/rb/nginx_utils.png)](http://badge.fury.io/rb/nginx_utils)
 [![Build Status](https://travis-ci.org/i2bskn/nginx_utils.png?branch=master)](https://travis-ci.org/i2bskn/nginx_utils)
-[![Code Climate](https://codeclimate.com/github/i2bskn/nginx_utils.png)](https://codeclimate.com/github/i2bskn/nginx_utils)
 [![Coverage Status](https://coveralls.io/repos/i2bskn/nginx_utils/badge.png?branch=master)](https://coveralls.io/r/i2bskn/nginx_utils?branch=master)
+[![Code Climate](https://codeclimate.com/github/i2bskn/nginx_utils.png)](https://codeclimate.com/github/i2bskn/nginx_utils)
+
 
 Nginx utilities.
 
