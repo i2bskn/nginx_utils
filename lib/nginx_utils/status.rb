@@ -20,20 +20,20 @@ module NginxUtils
             status[0].split(":")[1],
             status[2].split,
             status[3].split.select{|i| /^[0-9]*$/ =~ i}
-          ].flatten)
+          ].flatten.map{|i| i.to_i})
         rescue
           raise "Parse error"
       end
 
       def formexp(args)
         {
-          active_connections: args[0].to_i,
-          accepts: args[1].to_i,
-          handled: args[2].to_i,
-          requests: args[3].to_i,
-          reading: args[4].to_i,
-          writing: args[5].to_i,
-          waiting: args[6].to_i
+          active_connections: args[0],
+          accepts: args[1],
+          handled: args[2],
+          requests: args[3],
+          reading: args[4],
+          writing: args[5],
+          waiting: args[6]
         }
       end
     end
