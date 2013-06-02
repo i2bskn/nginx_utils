@@ -4,7 +4,7 @@ rvm:
   - 2.0.0
 gemfile:
   - Gemfile
-script: bundle exec rspec
+script: bundle exec rake spec
 branches:
   only:
     - master

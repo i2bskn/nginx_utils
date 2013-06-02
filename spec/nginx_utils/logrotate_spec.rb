@@ -116,9 +116,34 @@ describe "NginxUtils::Logrotate" do
         expect(rotate.logger).to be_false
       end
 
-      it "@logger.level should be a specified level" do
+      it "@logger.level should be a fatal" do
+        logger_mock.should_receive(:level=).with(Logger::FATAL)
+        NginxUtils::Logrotate.new(log_level: :fatal)
+      end
+
+      it "@logger.level should be a error" do
+        logger_mock.should_receive(:level=).with(Logger::ERROR)
+        NginxUtils::Logrotate.new(log_level: :error)
+      end
+
+      it "@logger.level should be a warn" do
         logger_mock.should_receive(:level=).with(Logger::WARN)
         NginxUtils::Logrotate.new(log_level: :warn)
+      end
+
+      it "@logger.level should be a info" do
+        logger_mock.should_receive(:level=).with(Logger::INFO)
+        NginxUtils::Logrotate.new(log_level: :info)
+      end
+
+      it "@logger.level should be a debug" do
+        logger_mock.should_receive(:level=).with(Logger::DEBUG)
+        NginxUtils::Logrotate.new(log_level: :debug)
+      end
+
+      it "@logger.level should be a debug if invalid params" do
+        logger_mock.should_receive(:level=).with(Logger::DEBUG)
+        NginxUtils::Logrotate.new(log_level: :invalid)
       end
 
       it "@params[:root_dir] should be a specified parameter" do
