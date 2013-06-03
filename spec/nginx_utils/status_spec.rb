@@ -7,12 +7,36 @@ describe "NginxUtils::Status" do
   let(:status) {{active_connections: 1, accepts: 4, handled: 5, requests: 51, reading: 1, writing: 3, waiting: 2}}
 
   describe ".get" do
+    let(:response) {double("http response mock", body: body)}
     before {NginxUtils::Status.stub(:parse).and_return(nil)}
 
     it "should get status" do
-      response = double("http response mock", body: body)
       Net::HTTP.should_receive(:start).and_return(response)
       expect(proc{NginxUtils::Status.get}).not_to raise_error
+    end
+
+    it "should default params if not specified" do
+      req = Net::HTTP::Get.new("/nginx_status")
+      Net::HTTP::Get.should_receive(:new).with("/nginx_status").and_return(req)
+      Net::HTTP.should_receive(:start).with("localhost", 80).and_return(response)
+      expect(proc{NginxUtils::Status.get}).not_to raise_error
+    end
+
+    it "should specified host" do
+      Net::HTTP.should_receive(:start).with("example.com", 80).and_return(response)
+      expect(proc{NginxUtils::Status.get(host: "example.com")}).not_to raise_error
+    end
+
+    it "should specified port" do
+      Net::HTTP.should_receive(:start).with("localhost", 8080).and_return(response)
+      expect(proc{NginxUtils::Status.get(port: 8080)}).not_to raise_error
+    end
+
+    it "should specified path" do
+      req = Net::HTTP::Get.new("/nginx-status")
+      Net::HTTP::Get.should_receive(:new).with("/nginx-status").and_return(req)
+      Net::HTTP.should_receive(:start).and_return(response)
+      expect(proc{NginxUtils::Status.get(path: "/nginx-status")}).not_to raise_error
     end
   end
 
