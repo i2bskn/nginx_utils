@@ -1,0 +1,190 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>NginxUtils by i2bskn</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/respond.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!--[if lt IE 8]>
+    <link rel="stylesheet" href="stylesheets/ie.css">
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+      <div id="header">
+        <nav>
+          <li class="fork"><a href="https://github.com/i2bskn/nginx_utils">View On GitHub</a></li>
+          <li class="downloads"><a href="https://github.com/i2bskn/nginx_utils/zipball/master">ZIP</a></li>
+          <li class="downloads"><a href="https://github.com/i2bskn/nginx_utils/tarball/master">TAR</a></li>
+          <li class="title">DOWNLOADS</li>
+        </nav>
+      </div><!-- end header -->
+
+    <div class="wrapper">
+
+      <section>
+        <div id="title">
+          <h1>NginxUtils</h1>
+          <p>Nginx utilities.</p>
+          <hr>
+          <span class="credits left">Project maintained by <a href="https://github.com/i2bskn">i2bskn</a></span>
+          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="http://twitter.com/#!/michigangraham">mattgraham</a></span>
+        </div>
+
+        <h2>
+<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h2>
+
+<p>Add this line to your application's Gemfile:</p>
+
+<div class="highlight"><pre><span class="n">gem</span> <span class="s1">'nginx_utils'</span>
+</pre></div>
+
+<p>And then execute:</p>
+
+<pre><code>$ bundle
+</code></pre>
+
+<p>Or install it yourself as:</p>
+
+<pre><code>$ gem install nginx_utils
+</code></pre>
+
+<h2>
+<a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h2>
+
+<p>From console:</p>
+
+<pre><code>$ nginx_utils [status|logrotate] [options]
+Commands:
+nginx_utils help [COMMAND]      # Describe available commands or one specific command
+nginx_utils logrotate -d        # Nginx logrotate
+nginx_utils status example.com  # Print status of Nginx
+
+$ nginx_utils status
+Active Connections: 1
+Accepts: 4 Handled: 5 Requests: 51
+Reading: 1 Writing: 3 Waiting: 2
+
+$ nginx_utils logrotate
+</code></pre>
+
+<p>From ruby:</p>
+
+<div class="highlight"><pre><span class="nb">require</span> <span class="s1">'nginx_utils'</span>
+</pre></div>
+
+<h3>
+<a name="logrotate" class="anchor" href="#logrotate"><span class="octicon octicon-link"></span></a>Logrotate</h3>
+
+<p>Logs of rename target: <code>Dir.glob "#{root_dir}/**/#{target_logs}"</code>
+Logs of delete target: <code>Dir.glob "#{root_dir}/**/#{target_logs}.*"</code></p>
+
+<div class="highlight"><pre><span class="c1"># Following parameters are default.</span>
+<span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="ss">debug</span><span class="p">:</span> <span class="kp">false</span><span class="p">,</span>
+  <span class="n">script_log</span><span class="p">:</span> <span class="s2">"/tmp/nginx_rotate.log"</span><span class="p">,</span>
+  <span class="n">log_level</span><span class="p">:</span> <span class="ss">:debug</span><span class="p">,</span>
+  <span class="n">root_dir</span><span class="p">:</span> <span class="s2">"/usr/local/nginx"</span><span class="p">,</span>
+  <span class="n">target_logs</span><span class="p">:</span> <span class="s2">"*.log"</span><span class="p">,</span>
+  <span class="ss">prefix</span><span class="p">:</span> <span class="no">Time</span><span class="o">.</span><span class="n">now</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">"%Y%m%d%H%M%S"</span><span class="p">),</span>
+  <span class="ss">retention</span><span class="p">:</span> <span class="mi">90</span><span class="p">,</span>
+  <span class="n">pid_file</span><span class="p">:</span> <span class="s2">"/usr/local/nginx/logs/nginx.pid"</span>
+<span class="p">}</span>
+
+<span class="n">rotate</span> <span class="o">=</span> <span class="ss">NginxUtils</span><span class="p">:</span><span class="ss">:Logrotate</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+<span class="c1"># == Configure</span>
+<span class="c1"># rotate.config log_level: :worn</span>
+
+<span class="c1"># == Accessor</span>
+<span class="c1"># rotate.logger.formatter = proc { |severity, datetime, progname, msg|</span>
+<span class="c1">#   "#{datetime}: #{msg}\n"</span>
+<span class="c1"># }</span>
+<span class="c1"># rotate.rename_logs &lt;&lt; add_rename_log</span>
+<span class="c1"># rotate.delete_logs &lt;&lt; add_delete_log</span>
+
+<span class="n">rotate</span><span class="o">.</span><span class="n">execute</span>
+</pre></div>
+
+<p>Options that can be specified:</p>
+
+<ul>
+<li>
+<code>:debug</code> =&gt; <code>true</code> or <code>false</code>. If <code>:debug</code> is true, it is not execute.</li>
+<li>
+<code>:script_log</code> =&gt; <code>"/path/to/nginx_rotate.log"</code>. If <code>:script</code> is false, do not output logs.</li>
+<li>
+<code>:log_level</code> =&gt; <code>:debug</code> or <code>:info</code> or <code>:warn</code> or <code>:error</code> or <code>:fatal</code>.</li>
+<li>
+<code>:root_dir</code> =&gt; <code>"/path/to/nginx"</code>. Root directory of Nginx.</li>
+<li>
+<code>:target_logs</code> =&gt; <code>"*.log"</code>. Specify logs of target.</li>
+<li>
+<code>:prefix</code> =&gt; <code>Time.now.strftime("%Y%m%d%H%M%S")</code>. Prefix use to rename.</li>
+<li>
+<code>:retention</code> =&gt; <code>90</code>. Specify in days the retention period of log.</li>
+<li>
+<code>:pid_file</code> =&gt; <code>"/path/to/nginx.pid"</code>. Use to restart Nginx.</li>
+</ul><h3>
+<a name="status" class="anchor" href="#status"><span class="octicon octicon-link"></span></a>Status</h3>
+
+<p>Require <strong>HttpStubStatusModule</strong>.</p>
+
+<div class="highlight"><pre><span class="c1"># http://localhost/nginx_status</span>
+<span class="ss">NginxUtils</span><span class="p">:</span><span class="ss">:Status</span><span class="o">.</span><span class="n">get</span> <span class="c1"># =&gt; {active_connection: 1, accepts: 4, handled: 5, requests: 51, reading: 1, writing: 3, waiting: 2}</span>
+
+<span class="c1"># Apache like</span>
+<span class="c1"># http://example.com/server-status</span>
+<span class="ss">NginxUtils</span><span class="p">:</span><span class="ss">:Status</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="ss">host</span><span class="p">:</span> <span class="s2">"example.com"</span><span class="p">,</span> <span class="ss">path</span><span class="p">:</span> <span class="s2">"/server-status"</span><span class="p">)</span>
+</pre></div>
+
+<h3>
+<a name="logreader" class="anchor" href="#logreader"><span class="octicon octicon-link"></span></a>Logreader</h3>
+
+<p>LTSV:</p>
+
+<p>The default format is <code>:ltsv</code>.</p>
+
+<div class="highlight"><pre><span class="n">log_file</span> <span class="o">=</span> <span class="s2">"/path/to/nginx/logs/access.log.ltsv"</span>
+<span class="n">reader</span> <span class="o">=</span> <span class="ss">NginxUtils</span><span class="p">:</span><span class="ss">:Logreader</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">log_file</span><span class="p">)</span>
+<span class="n">reader</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">line</span><span class="o">|</span>
+  <span class="nb">p</span> <span class="n">line</span> <span class="c1"># =&gt; {time: "2013-05-19T08:13:14+00:00", host: "192.168.1.10", ...}</span>
+<span class="k">end</span>
+</pre></div>
+
+<p>Combined:</p>
+
+<div class="highlight"><pre><span class="n">log_file</span> <span class="o">=</span> <span class="s2">"/path/to/nginx/logs/access.log.combined"</span>
+<span class="n">reader</span> <span class="o">=</span> <span class="ss">NginxUtils</span><span class="p">:</span><span class="ss">:Logreader</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">log_file</span><span class="p">,</span> <span class="nb">format</span><span class="p">:</span> <span class="ss">:combined</span><span class="p">)</span>
+<span class="n">reader</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span><span class="o">|</span><span class="n">line</span><span class="o">|</span> <span class="nb">p</span> <span class="n">line</span><span class="p">}</span> <span class="c1"># =&gt; {:remote_addr=&gt;"x.x.x.x", :remote_user=&gt;"-", :time_local=&gt;"19/May/2013:23:14:04 +0900", :request=&gt;"GET / HTTP/1.1", :status=&gt;"200", :body_bytes_sent=&gt;"564", :http_referer=&gt;"-", :http_user_agent=&gt;"-"}</span>
+</pre></div>
+
+<p>Custom:</p>
+
+<div class="highlight"><pre><span class="n">log_file</span> <span class="o">=</span> <span class="s2">"/path/to/nginx/logs/access.log.combined"</span>
+<span class="n">parser</span> <span class="o">=</span> <span class="sr">/\[(.*)\]\s"(.*?)"/</span>
+<span class="n">reader</span> <span class="o">=</span> <span class="ss">NginxUtils</span><span class="p">:</span><span class="ss">:Logreader</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">log_file</span><span class="p">,</span> <span class="ss">parser</span><span class="p">:</span> <span class="n">parser</span><span class="p">)</span>
+<span class="n">reader</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span><span class="o">|</span><span class="n">line</span><span class="o">|</span> <span class="nb">p</span> <span class="n">line</span><span class="o">.</span><span class="n">first</span><span class="p">}</span> <span class="c1">#=&gt; ["19/May/2013:23:13:52 +0900", "GET / HTTP/1.1"]</span>
+</pre></div>
+
+<p>Options that can be specified:</p>
+
+<ul>
+<li>
+<code>:format</code> =&gt; <code>:ltsv</code> or <code>:combined</code>. If parser is specified, format is automatically <code>:custom</code>.</li>
+<li>
+<code>:parser</code> =&gt; Parse with <code>String#scan</code>. Specified in Regexp.</li>
+</ul>
+      </section>
+
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    
+  </body>
+</html>
