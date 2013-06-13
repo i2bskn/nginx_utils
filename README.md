@@ -90,6 +90,14 @@ Options that can be specified:
 * `:retention` => `90`. Specify in days the retention period of log.
 * `:pid_file` => `"/path/to/nginx.pid"`. Use to restart Nginx.
 
+for cron:
+
+e.g.
+
+```
+3 19 * * * /usr/local/bin/nginx_utils logrotate
+```
+
 ### Status
 
 Require **HttpStubStatusModule**.
