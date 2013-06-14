@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-describe "NginxUtils::Logreader" do
+describe NginxUtils::Logreader do
   let!(:io_mock) do
     io = double("io mock").as_null_object
     File.stub(:open).and_return(io)
