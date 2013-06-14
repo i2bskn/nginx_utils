@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-describe "NginxUtils::Logrotate" do
+describe NginxUtils::Logrotate do
   let(:rotate) {NginxUtils::Logrotate.new}
 
   let!(:logger_mock) do
