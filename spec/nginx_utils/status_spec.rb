@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-describe "NginxUtils::Status" do
+describe NginxUtils::Status do
   let(:body) {"Active connections: 1 \nserver accepts handled requests\n 4 5 51 \nReading: 1 Writing: 3 Waiting: 2 \n"}
   let(:status) {{active_connections: 1, accepts: 4, handled: 5, requests: 51, reading: 1, writing: 3, waiting: 2}}
 

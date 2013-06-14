@@ -1,0 +1,111 @@
+# <%= @server_name %>.conf
+# Created by nginx_utils version <%= NginxUtils::VERSION %>
+<% if @vhost_type == :unicorn %>
+upstream backend-unicorn {
+  server <%= @destination %>;
+}
+<% end %>
+
+<% if @http %>
+server {
+  listen 80;
+  server_name <%= @server_name %>;
+  <% if @vhost_type != :proxy %>
+  root <%= @root %>;
+  index <%= @index %>;
+  <% end %>
+
+  access_log <%= [File.join(@log_dir, "access.log"), @access_log_format.to_s].join(" ") %>;
+  error_log <%= [File.join(@log_dir, "error.log"), @error_log_level.to_s].join(" ") %>;
+
+  <% if @auth_basic %>
+  auth_basic "<%= @auth_basic %>";
+  auth_basic_user_file <%= @auth_basic_user_file %>;
+  <% end %>
+
+  <% if @vhost_type != :normal %>
+  location / {
+    <% if @vhost_type != :proxy %>
+    try_files $uri @proxy;
+    <% else %>
+    proxy_pass http://<%= @destination %>;
+    proxy_redirect default;
+    <% end %>
+  }
+  <% end %>
+
+  <% if @vhost_type != :normal && @vhost_type != :proxy %>
+  location @proxy {
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header Host $http_host;
+    proxy_set_header X-Forwarded-Proto https;
+    proxy_redirect off;
+
+    <% if @vhost_type == :passenger %>
+    passenger_enabled on;
+    <% end %>
+
+    <% if @vhost_type == :unicorn %>
+    proxy_pass http://backend-unicorn;
+    <% end %>
+  }
+  <% end %>
+}
+<% end %>
+
+<% if @https %>
+server {
+  listen 443 ssl;
+  server_name <%= @server_name %>;
+  <% if @vhost_type != :proxy %>
+  root <%= @root %>;
+  index <%= @index %>;
+  <% end %>
+
+  access_log <%= [File.join(@log_dir, "ssl_access.log"), @access_log_format.to_s].join(" ") %>;
+  error_log <%= [File.join(@log_dir, "ssl_error.log"), @error_log_level.to_s].join(" ") %>;
+
+  ssl on;
+  ssl_certificate <%= @ssl_certificate %>;
+  ssl_certificate_key <%= @ssl_certificate_key %>;
+
+  ssl_session_timeout 5m;
+
+  ssl_protocols SSLv2 SSLv3 TLSv1;
+  ssl_ciphers HIGH:!aNULL:!MD5;
+  ssl_prefer_server_ciphers on;
+
+  <% if @auth_basic %>
+  auth_basic "<%= @auth_basic %>";
+  auth_basic_user_file <%= @auth_basic_user_file %>;
+  <% end %>
+
+  <% if @vhost_type != :normal %>
+  location / {
+    <% if @vhost_type != :proxy %>
+    try_files $uri @proxy;
+    <% else %>
+    proxy_pass http://<%= @destination %>;
+    proxy_redirect default;
+    <% end %>
+  }
+  <% end %>
+
+  <% if @vhost_type != :normal && @vhost_type != :proxy %>
+  location @proxy {
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header Host $http_host;
+    proxy_set_header X-Forwarded-Proto https;
+    proxy_redirect off;
+
+    <% if @vhost_type == :passenger %>
+    passenger_enabled on;
+    <% end %>
+
+    <% if @vhost_type == :unicorn %>
+    proxy_pass http://backend-unicorn;
+    <% end %>
+  }
+  <% end %>
+}
+<% end %>
