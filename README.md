@@ -28,11 +28,12 @@ Or install it yourself as:
 
 From console:
 
-    $ nginx_utils [status|logrotate] [options]
+    $ nginx_utils [status|logrotate|create_vhost] [options]
     Commands:
-    nginx_utils help [COMMAND]      # Describe available commands or one specific command
-    nginx_utils logrotate -d        # Nginx logrotate
-    nginx_utils status example.com  # Print status of Nginx
+    nginx_utils create_vhost [OPTIONS]  # Create vhost config
+    nginx_utils help [COMMAND]          # Describe available commands or one specific command
+    nginx_utils logrotate [OPTIONS]     # Nginx logrotate
+    nginx_utils status example.com      # Print status of Nginx
 
     $ nginx_utils status
     Active Connections: 1
@@ -40,6 +41,8 @@ From console:
     Reading: 1 Writing: 3 Waiting: 2
 
     $ nginx_utils logrotate
+
+    $ nginx_utils create_vhost -T unicorn -D /usr/local/rails/app/tmp/unicorn.sock -n rails.example.com --only_https
 
 From ruby:
 
@@ -146,6 +149,37 @@ Options that can be specified:
 
 * `:format` => `:ltsv` or `:combined`. If parser is specified, format is automatically `:custom`.
 * `:parser` => Parse with `String#scan`. Specified in Regexp.
+
+### VirtualHost
+
+```ruby
+vhost = NginxUtils::VirtualHost.new(
+  vhost_type: :passenger,
+  server_name: "sinatra.example.com",
+  root: "/usr/local/sinatra/app/public",
+  only_https: true
+)
+
+puts vhost.config
+```
+
+Options that can be specified:
+
+* `:vhost_type` => `:unicorn` or `:passenger` or `:proxy` or `:normal`. `:normal` is default.
+* `:destination` => IP address and port or UNIX domain socket path.
+* `:prefix` => Root directory of Nginx.
+* `:server_name` => Server name of virtual host.
+* `:root` => Document root directory path.
+* `:index` => Index files. `["index.html", "index.htm"].join(" ")` is default.
+* `:auth_basic` => Basic realm. `nil` is default.
+* `:auth_basic_user_file` => htpasswd file path.
+* `:http` => Enable http block. default is true.
+* `:https` => Enable https block. default is true.
+* `:ssl_certificate` => Certigicate file path.
+* `:ssl_certificate_key` => Certificate key file path.
+* `:log_dir` => Log directory path.
+* `:access_log_format` => Log format of access log. `:ltsv` is default.
+* `:error_log_level` => Log level of error log. `:info` is default.
 
 ## Contributing
 
