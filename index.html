@@ -180,6 +180,52 @@ Logs of delete target: <code>Dir.glob "#{root_dir}/**/#{target_logs}.*"</code></
 <code>:format</code> =&gt; <code>:ltsv</code> or <code>:combined</code>. If parser is specified, format is automatically <code>:custom</code>.</li>
 <li>
 <code>:parser</code> =&gt; Parse with <code>String#scan</code>. Specified in Regexp.</li>
+</ul><h3>
+<a name="virtualhost" class="anchor" href="#virtualhost"><span class="octicon octicon-link"></span></a>VirtualHost</h3>
+
+<div class="highlight"><pre><span class="n">vhost</span> <span class="o">=</span> <span class="ss">NginxUtils</span><span class="p">:</span><span class="ss">:VirtualHost</span><span class="o">.</span><span class="n">new</span><span class="p">(</span>
+  <span class="n">vhost_type</span><span class="p">:</span> <span class="ss">:passenger</span><span class="p">,</span>
+  <span class="n">server_name</span><span class="p">:</span> <span class="s2">"sinatra.example.com"</span><span class="p">,</span>
+  <span class="ss">root</span><span class="p">:</span> <span class="s2">"/usr/local/sinatra/app/public"</span><span class="p">,</span>
+  <span class="n">only_https</span><span class="p">:</span> <span class="kp">true</span>
+<span class="p">)</span>
+
+<span class="nb">puts</span> <span class="n">vhost</span><span class="o">.</span><span class="n">config</span>
+</pre></div>
+
+<p>Options that can be specified:</p>
+
+<ul>
+<li>
+<code>:vhost_type</code> =&gt; <code>:unicorn</code> or <code>:passenger</code> or <code>:proxy</code> or <code>:normal</code>. <code>:normal</code> is default.</li>
+<li>
+<code>:destination</code> =&gt; IP address and port or UNIX domain socket path.</li>
+<li>
+<code>:prefix</code> =&gt; Root directory of Nginx.</li>
+<li>
+<code>:server_name</code> =&gt; Server name of virtual host.</li>
+<li>
+<code>:root</code> =&gt; Document root directory path.</li>
+<li>
+<code>:index</code> =&gt; Index files. <code>["index.html", "index.htm"].join(" ")</code> is default.</li>
+<li>
+<code>:auth_basic</code> =&gt; Basic realm. <code>nil</code> is default.</li>
+<li>
+<code>:auth_basic_user_file</code> =&gt; htpasswd file path.</li>
+<li>
+<code>:http</code> =&gt; Enable http block. default is true.</li>
+<li>
+<code>:https</code> =&gt; Enable https block. default is true.</li>
+<li>
+<code>:ssl_certificate</code> =&gt; Certigicate file path.</li>
+<li>
+<code>:ssl_certificate_key</code> =&gt; Certificate key file path.</li>
+<li>
+<code>:log_dir</code> =&gt; Log directory path.</li>
+<li>
+<code>:access_log_format</code> =&gt; Log format of access log. <code>:ltsv</code> is default.</li>
+<li>
+<code>:error_log_level</code> =&gt; Log level of error log. <code>:info</code> is default.</li>
 </ul>
       </section>
 
