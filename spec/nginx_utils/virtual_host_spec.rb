@@ -179,67 +179,111 @@ describe NginxUtils::VirtualHost do
   end
 
   describe "#config" do
-    subject {
-      virtual_host = NginxUtils::VirtualHost.new(
-        vhost_type: :unicorn,
-        destination: "/usr/local/rails/app/tmp/unicorn.sock",
-        prefix: "/opt/nginx",
-        server_name: "nginx_utils.example.com",
-        index: "index.rb",
-        log_dir: "/var/log",
-        access_log_format: "combined",
-        error_log_level: "error",
-        auth_basic: "Auth"
-      )
-      virtual_host.config
-    }
+    context "for unicron" do
+      subject {
+        virtual_host = NginxUtils::VirtualHost.new(
+          vhost_type: :unicorn,
+          destination: "/usr/local/rails/app/tmp/unicorn.sock",
+          prefix: "/opt/nginx",
+          server_name: "nginx_utils.example.com",
+          index: "index.rb",
+          log_dir: "/var/log",
+          access_log_format: "combined",
+          error_log_level: "error",
+          auth_basic: "Auth"
+        )
+        virtual_host.config
+      }
 
-    it "upstream block should be defined" do
-      should match(/upstream backend-unicorn/)
+      it "upstream block should be defined" do
+        should match(/upstream backend-unicorn/)
+      end
+
+      it "http block should be defined" do
+        should match(/listen 80;/)
+      end
+
+      it "https block should be defined" do
+        should match(/listen 443 ssl;/)
+      end
+
+      it "unix domain socket should be defined" do
+        should match(/server unix:\/usr\/local\/rails\/app\/tmp\/unicorn\.sock;/)
+      end
+
+      it "server_name should be defined" do
+        should match(/server_name nginx_utils.example.com;/)
+      end
+
+      it "index should be defined" do
+        should match(/index index.rb;/)
+      end
+
+      it "access_log should be defined" do
+        should match(/access_log \/var\/log\/access.log combined;/)
+      end
+
+      it "error_log should be defined" do
+        should match(/error_log \/var\/log\/error.log error;/)
+      end
+
+      it "auth_basic should be defined" do
+        should match(/auth_basic "Auth";/)
+      end
+
+      it "auth_basic_user_file should be defined" do
+        should match(/auth_basic_user_file \/opt\/nginx\/vhosts\/nginx_utils\.example\.com\/etc\/users;/)
+      end
+
+      it "try_files should be defined" do
+        should match(/try_files/)
+      end
+
+      it "proxy_pass should be defined" do
+        should match(/proxy_pass http:\/\/backend-unicorn;/)
+      end
     end
 
-    it "http block should be defined" do
-      should match(/listen 80;/)
-    end
+    context "for passenger" do
+      subject {
+        virtual_host = NginxUtils::VirtualHost.new(
+          vhost_type: :passenger,
+          only_https: true
+        )
+        virtual_host.config
+      }
 
-    it "https block should be defined" do
-      should match(/listen 443 ssl;/)
-    end
+      it "upstream block should not defined" do
+        should_not match(/upstream backend-unicorn/)
+      end
 
-    it "unix domain socket should be defined" do
-      should match(/server unix:\/usr\/local\/rails\/app\/tmp\/unicorn\.sock;/)
-    end
+      it "http block should not defined" do
+        should_not match(/listen\s+80/)
+      end
 
-    it "server_name should be defined" do
-      should match(/server_name nginx_utils.example.com;/)
-    end
+      it "auth_basic should not defined" do
+        should_not match(/auth_basic/)
+      end
 
-    it "index should be defined" do
-      should match(/index index.rb;/)
-    end
+      it "proxy_pass should not defined" do
+        should_not match(/proxy_pass/)
+      end
 
-    it "access_log should be defined" do
-      should match(/access_log \/var\/log\/access.log combined;/)
-    end
+      it "https block should be defined" do
+        should match(/listen 443 ssl;/)
+      end
 
-    it "error_log should be defined" do
-      should match(/error_log \/var\/log\/error.log error;/)
-    end
+      it "server_name should be default" do
+        should match(/server_name example.com;/)
+      end
 
-    it "auth_basic should be defined" do
-      should match(/auth_basic "Auth";/)
-    end
+      it "index should be default" do
+        should match(/index index.html index.htm;/)
+      end
 
-    it "auth_basic_user_file should be defined" do
-      should match(/auth_basic_user_file \/opt\/nginx\/vhosts\/nginx_utils\.example\.com\/etc\/users;/)
-    end
-
-    it "try_files should be defined" do
-      should match(/try_files/)
-    end
-
-    it "proxy_pass should be defined" do
-      should match(/proxy_pass http:\/\/backend-unicorn;/)
+      it "passenger_enabled should be defined" do
+        should match(/passenger_enabled on/)
+      end
     end
   end
 end
