@@ -258,7 +258,7 @@ describe NginxUtils::VirtualHost do
       end
 
       it "http block should not defined" do
-        should_not match(/listen\s+80/)
+        should_not match(/listen 80/)
       end
 
       it "auth_basic should not defined" do
@@ -270,7 +270,7 @@ describe NginxUtils::VirtualHost do
       end
 
       it "https block should be defined" do
-        should match(/listen 443 ssl;/)
+        should match(/listen 443 ssl/)
       end
 
       it "server_name should be default" do
@@ -283,6 +283,41 @@ describe NginxUtils::VirtualHost do
 
       it "passenger_enabled should be defined" do
         should match(/passenger_enabled on/)
+      end
+    end
+
+    context "for proxy" do
+      subject {
+        virtual_host = NginxUtils::VirtualHost.new(
+          vhost_type: :proxy,
+          destination: "192.168.10.241:8080",
+          only_http: true
+        )
+        virtual_host.config
+      }
+
+      it "upstream block should not defined" do
+        should_not match(/upstream backend-unicorn/)
+      end
+
+      it "http block should defined" do
+        should match(/listen 80/)
+      end
+
+      it "https block should not defined" do
+        should_not match(/listen 443 ssl/)
+      end
+
+      it "proxy_pass should defined" do
+        should match(/proxy_pass http:\/\/192\.168\.10\.241:8080/)
+      end
+
+      it "proxy_redirect should defined" do
+        should match(/proxy_redirect default/)
+      end
+
+      it "passenger_enabled should be defined" do
+        should_not match(/passenger_enabled on/)
       end
     end
   end
