@@ -11,5 +11,3 @@ branches:
 notifications:
   mails:
     - i2bskn@gmail.com
-  on_sucess: always
-  on_failure: always
