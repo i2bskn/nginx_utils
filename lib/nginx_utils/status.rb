@@ -4,9 +4,9 @@ module NginxUtils
   module Status
     class << self
       def get(options={})
-        host = options[:host] || "localhost"
-        port = options[:port] || 80
-        path = options[:path] || "/nginx_status"
+        host = options.fetch(:host, "localhost")
+        port = options.fetch(:port, 80)
+        path = options.fetch(:path, "/nginx_status")
 
         req = Net::HTTP::Get.new(path)
         res = Net::HTTP.start(host, port){|http| http.request(req)}

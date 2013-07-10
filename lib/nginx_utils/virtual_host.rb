@@ -20,10 +20,10 @@ module NginxUtils
         case options[:vhost_type].to_sym
         when :unicorn then
           @vhost_type = :unicorn
-          @destination = options[:destination] || "127.0.0.1:8080"
+          @destination = options.fetch(:destination, "127.0.0.1:8080")
         when :proxy then
           @vhost_type = :proxy
-          @destination = options[:destination] || "127.0.0.1:8080"
+          @destination = options.fetch(:destination, "127.0.0.1:8080")
         when :passenger then
           @vhost_type = :passenger
         else
@@ -38,13 +38,13 @@ module NginxUtils
 
     def set_common_params(options)
       # Arguments: prefix, server_name, root, index, auth_basic, auth_basic_user_file in options
-      @prefix = options[:prefix] || "/usr/local/nginx"
-      @server_name = options[:server_name] || "example.com"
-      @root = options[:root] || File.join(@prefix, "vhosts", @server_name, "html")
-      @index = options[:index] || ["index.html", "index.htm"].join(" ")
+      @prefix = options.fetch(:prefix, "/usr/local/nginx")
+      @server_name = options.fetch(:server_name, "example.com")
+      @root = options.fetch(:root, File.join(@prefix, "vhosts", @server_name, "html"))
+      @index = options.fetch(:index, ["index.html", "index.htm"].join(" "))
       @auth_basic = options[:auth_basic]
       if @auth_basic
-        @auth_basic_user_file = options[:auth_basic_user_file] || File.join(@prefix, "vhosts", @server_name, "etc", "users")
+        @auth_basic_user_file = options.fetch(:auth_basic_user_file, File.join(@prefix, "vhosts", @server_name, "etc", "users"))
       end
     end
 
@@ -55,16 +55,16 @@ module NginxUtils
       @http = false if options[:only_https]
       @https = false if options[:only_http]
       if @https
-        @ssl_certificate = options[:ssl_certificate] || File.join(@prefix, "vhosts", @server_name, "ssl.crt", "server.crt")
-        @ssl_certificate_key = options[:ssl_certificate_key] || File.join(@prefix, "vhosts", @server_name, "ssl.key", "server.key")
+        @ssl_certificate = options.fetch(:ssl_certificate, File.join(@prefix, "vhosts", @server_name, "ssl.crt", "server.crt"))
+        @ssl_certificate_key = options.fetch(:ssl_certificate_key, File.join(@prefix, "vhosts", @server_name, "ssl.key", "server.key"))
       end
     end
 
     def set_log_params(options)
       # Arguments: log_dir, access_log_format, error_log_level in options
-      @log_dir = options[:log_dir] || File.join(@prefix, "vhosts", @server_name, "logs")
-      @access_log_format = options[:access_log_format] || :ltsv
-      @error_log_level = options[:error_log_level] || :info
+      @log_dir = options.fetch(:log_dir, File.join(@prefix, "vhosts", @server_name, "logs"))
+      @access_log_format = options.fetch(:access_log_format, :ltsv)
+      @error_log_level = options.fetch(:error_log_level, :info)
     end
 
     def config

@@ -8,14 +8,11 @@ module NginxUtils
       @log = File.open(log)
 
       if options[:parser]
-        if options[:parser].is_a? Regexp
-          @format = :custom
-          @parser = options[:parser]
-        else
-          raise ArgumentError, "invalid argument"
-        end
+        raise ArgumentError, "invalid argument" unless options[:parser].is_a? Regexp
+        @format = :custom
+        @parser = options[:parser]
       else
-        @format = options[:format] || :ltsv
+        @format = options.fetch(:format, :ltsv)
       end
     end
 
