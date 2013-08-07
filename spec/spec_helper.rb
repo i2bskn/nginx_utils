@@ -13,3 +13,7 @@ SimpleCov.start do
 end
 
 require "nginx_utils"
+
+RSpec.configure do |config|
+  config.order = "random"
+end
