@@ -1,21 +1,8 @@
 # coding: utf-8
 
 require "spec_helper"
-require "stringio"
 
 describe NginxUtils::CLI do
-  def capture(stream)
-    begin
-      stream = stream.to_s
-      eval "$#{stream} = StringIO.new"
-      yield
-      result = eval("$#{stream}").string
-    ensure
-      eval("$#{stream} = #{stream.upcase}")
-    end
-    result
-  end
-
   describe "#status" do
     let(:result) {
       {
