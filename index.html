@@ -35,7 +35,7 @@
           <p>Nginx utilities.</p>
           <hr>
           <span class="credits left">Project maintained by <a href="https://github.com/i2bskn">i2bskn</a></span>
-          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="http://twitter.com/#!/michigangraham">mattgraham</a></span>
+          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
         </div>
 
         <h2>
@@ -43,7 +43,7 @@
 
 <p>Add this line to your application's Gemfile:</p>
 
-<div class="highlight"><pre><span class="n">gem</span> <span class="s1">'nginx_utils'</span>
+<div class="highlight highlight-ruby"><pre><span class="n">gem</span> <span class="s1">'nginx_utils'</span>
 </pre></div>
 
 <p>And then execute:</p>
@@ -61,11 +61,12 @@
 
 <p>From console:</p>
 
-<pre><code>$ nginx_utils [status|logrotate] [options]
+<pre><code>$ nginx_utils [status|logrotate|create_vhost] [options]
 Commands:
-nginx_utils help [COMMAND]      # Describe available commands or one specific command
-nginx_utils logrotate -d        # Nginx logrotate
-nginx_utils status example.com  # Print status of Nginx
+nginx_utils create_vhost [OPTIONS]  # Create vhost config
+nginx_utils help [COMMAND]          # Describe available commands or one specific command
+nginx_utils logrotate [OPTIONS]     # Nginx logrotate
+nginx_utils status example.com      # Print status of Nginx
 
 $ nginx_utils status
 Active Connections: 1
@@ -73,11 +74,13 @@ Accepts: 4 Handled: 5 Requests: 51
 Reading: 1 Writing: 3 Waiting: 2
 
 $ nginx_utils logrotate
+
+$ nginx_utils create_vhost -T unicorn -D /usr/local/rails/app/tmp/unicorn.sock -n rails.example.com --only_https
 </code></pre>
 
 <p>From ruby:</p>
 
-<div class="highlight"><pre><span class="nb">require</span> <span class="s1">'nginx_utils'</span>
+<div class="highlight highlight-ruby"><pre><span class="nb">require</span> <span class="s1">'nginx_utils'</span>
 </pre></div>
 
 <h3>
@@ -86,7 +89,7 @@ $ nginx_utils logrotate
 <p>Logs of rename target: <code>Dir.glob "#{root_dir}/**/#{target_logs}"</code>
 Logs of delete target: <code>Dir.glob "#{root_dir}/**/#{target_logs}.*"</code></p>
 
-<div class="highlight"><pre><span class="c1"># Following parameters are default.</span>
+<div class="highlight highlight-ruby"><pre><span class="c1"># Following parameters are default.</span>
 <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
   <span class="ss">debug</span><span class="p">:</span> <span class="kp">false</span><span class="p">,</span>
   <span class="n">script_log</span><span class="p">:</span> <span class="s2">"/tmp/nginx_rotate.log"</span><span class="p">,</span>
@@ -131,12 +134,19 @@ Logs of delete target: <code>Dir.glob "#{root_dir}/**/#{target_logs}.*"</code></
 <code>:retention</code> =&gt; <code>90</code>. Specify in days the retention period of log.</li>
 <li>
 <code>:pid_file</code> =&gt; <code>"/path/to/nginx.pid"</code>. Use to restart Nginx.</li>
-</ul><h3>
+</ul><p>for cron:</p>
+
+<p>e.g.</p>
+
+<pre><code>3 19 * * * /usr/local/bin/nginx_utils logrotate
+</code></pre>
+
+<h3>
 <a name="status" class="anchor" href="#status"><span class="octicon octicon-link"></span></a>Status</h3>
 
 <p>Require <strong>HttpStubStatusModule</strong>.</p>
 
-<div class="highlight"><pre><span class="c1"># http://localhost/nginx_status</span>
+<div class="highlight highlight-ruby"><pre><span class="c1"># http://localhost/nginx_status</span>
 <span class="ss">NginxUtils</span><span class="p">:</span><span class="ss">:Status</span><span class="o">.</span><span class="n">get</span> <span class="c1"># =&gt; {active_connection: 1, accepts: 4, handled: 5, requests: 51, reading: 1, writing: 3, waiting: 2}</span>
 
 <span class="c1"># Apache like</span>
@@ -151,7 +161,7 @@ Logs of delete target: <code>Dir.glob "#{root_dir}/**/#{target_logs}.*"</code></
 
 <p>The default format is <code>:ltsv</code>.</p>
 
-<div class="highlight"><pre><span class="n">log_file</span> <span class="o">=</span> <span class="s2">"/path/to/nginx/logs/access.log.ltsv"</span>
+<div class="highlight highlight-ruby"><pre><span class="n">log_file</span> <span class="o">=</span> <span class="s2">"/path/to/nginx/logs/access.log.ltsv"</span>
 <span class="n">reader</span> <span class="o">=</span> <span class="ss">NginxUtils</span><span class="p">:</span><span class="ss">:Logreader</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">log_file</span><span class="p">)</span>
 <span class="n">reader</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">line</span><span class="o">|</span>
   <span class="nb">p</span> <span class="n">line</span> <span class="c1"># =&gt; {time: "2013-05-19T08:13:14+00:00", host: "192.168.1.10", ...}</span>
@@ -160,14 +170,14 @@ Logs of delete target: <code>Dir.glob "#{root_dir}/**/#{target_logs}.*"</code></
 
 <p>Combined:</p>
 
-<div class="highlight"><pre><span class="n">log_file</span> <span class="o">=</span> <span class="s2">"/path/to/nginx/logs/access.log.combined"</span>
+<div class="highlight highlight-ruby"><pre><span class="n">log_file</span> <span class="o">=</span> <span class="s2">"/path/to/nginx/logs/access.log.combined"</span>
 <span class="n">reader</span> <span class="o">=</span> <span class="ss">NginxUtils</span><span class="p">:</span><span class="ss">:Logreader</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">log_file</span><span class="p">,</span> <span class="nb">format</span><span class="p">:</span> <span class="ss">:combined</span><span class="p">)</span>
 <span class="n">reader</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span><span class="o">|</span><span class="n">line</span><span class="o">|</span> <span class="nb">p</span> <span class="n">line</span><span class="p">}</span> <span class="c1"># =&gt; {:remote_addr=&gt;"x.x.x.x", :remote_user=&gt;"-", :time_local=&gt;"19/May/2013:23:14:04 +0900", :request=&gt;"GET / HTTP/1.1", :status=&gt;"200", :body_bytes_sent=&gt;"564", :http_referer=&gt;"-", :http_user_agent=&gt;"-"}</span>
 </pre></div>
 
 <p>Custom:</p>
 
-<div class="highlight"><pre><span class="n">log_file</span> <span class="o">=</span> <span class="s2">"/path/to/nginx/logs/access.log.combined"</span>
+<div class="highlight highlight-ruby"><pre><span class="n">log_file</span> <span class="o">=</span> <span class="s2">"/path/to/nginx/logs/access.log.combined"</span>
 <span class="n">parser</span> <span class="o">=</span> <span class="sr">/\[(.*)\]\s"(.*?)"/</span>
 <span class="n">reader</span> <span class="o">=</span> <span class="ss">NginxUtils</span><span class="p">:</span><span class="ss">:Logreader</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">log_file</span><span class="p">,</span> <span class="ss">parser</span><span class="p">:</span> <span class="n">parser</span><span class="p">)</span>
 <span class="n">reader</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span><span class="o">|</span><span class="n">line</span><span class="o">|</span> <span class="nb">p</span> <span class="n">line</span><span class="o">.</span><span class="n">first</span><span class="p">}</span> <span class="c1">#=&gt; ["19/May/2013:23:13:52 +0900", "GET / HTTP/1.1"]</span>
@@ -183,7 +193,7 @@ Logs of delete target: <code>Dir.glob "#{root_dir}/**/#{target_logs}.*"</code></
 </ul><h3>
 <a name="virtualhost" class="anchor" href="#virtualhost"><span class="octicon octicon-link"></span></a>VirtualHost</h3>
 
-<div class="highlight"><pre><span class="n">vhost</span> <span class="o">=</span> <span class="ss">NginxUtils</span><span class="p">:</span><span class="ss">:VirtualHost</span><span class="o">.</span><span class="n">new</span><span class="p">(</span>
+<div class="highlight highlight-ruby"><pre><span class="n">vhost</span> <span class="o">=</span> <span class="ss">NginxUtils</span><span class="p">:</span><span class="ss">:VirtualHost</span><span class="o">.</span><span class="n">new</span><span class="p">(</span>
   <span class="n">vhost_type</span><span class="p">:</span> <span class="ss">:passenger</span><span class="p">,</span>
   <span class="n">server_name</span><span class="p">:</span> <span class="s2">"sinatra.example.com"</span><span class="p">,</span>
   <span class="ss">root</span><span class="p">:</span> <span class="s2">"/usr/local/sinatra/app/public"</span><span class="p">,</span>
@@ -226,7 +236,16 @@ Logs of delete target: <code>Dir.glob "#{root_dir}/**/#{target_logs}.*"</code></
 <code>:access_log_format</code> =&gt; Log format of access log. <code>:ltsv</code> is default.</li>
 <li>
 <code>:error_log_level</code> =&gt; Log level of error log. <code>:info</code> is default.</li>
-</ul>
+</ul><h2>
+<a name="contributing" class="anchor" href="#contributing"><span class="octicon octicon-link"></span></a>Contributing</h2>
+
+<ol>
+<li>Fork it</li>
+<li>Create your feature branch (<code>git checkout -b my-new-feature</code>)</li>
+<li>Commit your changes (<code>git commit -am 'Add some feature'</code>)</li>
+<li>Push to the branch (<code>git push origin my-new-feature</code>)</li>
+<li>Create new Pull Request</li>
+</ol>
       </section>
 
     </div>
